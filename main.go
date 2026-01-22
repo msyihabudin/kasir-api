@@ -16,7 +16,7 @@ func main() {
 		})
 	})
 
-	http.HandleFunc("/products", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("/api/products", func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodGet:
 			handler.GetProducts(w, r)
@@ -27,7 +27,7 @@ func main() {
 		}
 	})
 
-	http.HandleFunc("/product", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("/api/product", func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodGet:
 			handler.GetProduct(w, r)

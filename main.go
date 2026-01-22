@@ -27,7 +27,7 @@ func main() {
 		}
 	})
 
-	http.HandleFunc("/api/product", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("/api/product/", func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodGet:
 			handler.GetProduct(w, r)
@@ -39,6 +39,31 @@ func main() {
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		}
 	})
+
+	http.HandleFunc("/api/categories", func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case http.MethodGet:
+			handler.GetCategories(w, r)
+		case http.MethodPost:
+			handler.CreateCategory(w, r)
+		default:
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		}
+	})
+
+	http.HandleFunc("/api/category/", func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case http.MethodGet:
+			handler.GetCategory(w, r)
+		case http.MethodPut:
+			handler.UpdateCategory(w, r)
+		case http.MethodDelete:
+			handler.DeleteCategory(w, r)
+		default:
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		}
+	})
+
 	fmt.Println("Server running on port 8080")
 
 	err := http.ListenAndServe(":8080", nil)

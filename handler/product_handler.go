@@ -6,6 +6,7 @@ import (
 	"kasir-api/model"
 	"math/rand"
 	"net/http"
+	"strings"
 	"sync"
 	"time"
 )
@@ -66,7 +67,7 @@ func GetProduct(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	id := r.URL.Query().Get("id")
+	id := strings.TrimPrefix(r.URL.Path, "/api/product/")
 	if id == "" {
 		http.Error(w, "Missing ID", http.StatusBadRequest)
 		return
@@ -91,7 +92,7 @@ func UpdateProduct(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	id := r.URL.Query().Get("id")
+	id := strings.TrimPrefix(r.URL.Path, "/api/product/")
 	if id == "" {
 		http.Error(w, "Missing ID", http.StatusBadRequest)
 		return
@@ -123,7 +124,7 @@ func DeleteProduct(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	id := r.URL.Query().Get("id")
+	id := strings.TrimPrefix(r.URL.Path, "/api/product/")
 	if id == "" {
 		http.Error(w, "Missing ID", http.StatusBadRequest)
 		return

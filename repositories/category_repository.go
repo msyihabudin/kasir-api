@@ -1,22 +1,22 @@
 package repositories
 
 import (
-	// "context"
-	"database/sql"
+	"context"
+	// "database/sql"
 	"kasir-api/models"
-	// "github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5"
 )
 
 type CategoryRepository struct {
-	db *sql.DB
+	db *pgx.Conn
 }
 
-func NewCategoryRepository(db *sql.DB) *CategoryRepository {
+func NewCategoryRepository(db *pgx.Conn) *CategoryRepository {
 	return &CategoryRepository{db: db}
 }
 
 func (r *CategoryRepository) GetAll() ([]*models.Category, error) {
-	rows, err := r.db.Query("SELECT id, name FROM category")
+	rows, err := r.db.Query(context.Background(), "SELECT id, name FROM category")
 	if err != nil {
 		return nil, err
 	}
@@ -36,6 +36,7 @@ func (r *CategoryRepository) GetAll() ([]*models.Category, error) {
 func (r *CategoryRepository) Create(c *models.Category) (*models.Category, error) {
 	var id string
 	err := r.db.QueryRow(
+		context.Background(),
 		"INSERT INTO category (name) VALUES ($1) RETURNING id",
 		c.Name,
 	).Scan(&id)
@@ -49,6 +50,7 @@ func (r *CategoryRepository) Create(c *models.Category) (*models.Category, error
 func (r *CategoryRepository) GetByID(id string) (*models.Category, error) {
 	var c models.Category
 	err := r.db.QueryRow(
+		context.Background(),
 		"SELECT id, name FROM category WHERE id = $1",
 		id,
 	).Scan(&c.ID, &c.Name)
@@ -60,6 +62,7 @@ func (r *CategoryRepository) GetByID(id string) (*models.Category, error) {
 
 func (r *CategoryRepository) Update(c *models.Category) (*models.Category, error) {
 	_, err := r.db.Exec(
+		context.Background(),
 		"UPDATE category SET name = $1 WHERE id = $2",
 		c.Name, c.ID,
 	)
@@ -71,6 +74,7 @@ func (r *CategoryRepository) Update(c *models.Category) (*models.Category, error
 
 func (r *CategoryRepository) Delete(id string) error {
 	_, err := r.db.Exec(
+		context.Background(),
 		"DELETE FROM category WHERE id = $1",
 		id,
 	)

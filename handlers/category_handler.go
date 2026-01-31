@@ -2,8 +2,10 @@ package handlers
 
 import (
 	"encoding/json"
+	"kasir-api/middleware"
 	"kasir-api/models"
 	"kasir-api/services"
+	"log"
 	"net/http"
 	"strings"
 )
@@ -28,6 +30,8 @@ func (h *CategoryHandler) HandleCategories(w http.ResponseWriter, r *http.Reques
 }
 
 func (h *CategoryHandler) GetAll(w http.ResponseWriter, r *http.Request) {
+	traceID := middleware.GetTraceID(r.Context())
+	log.Printf("[TRACE %s] CategoryHandler.GetAll called", traceID)
 	categories, err := h.service.GetAll()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -38,6 +42,8 @@ func (h *CategoryHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *CategoryHandler) Create(w http.ResponseWriter, r *http.Request) {
+	traceID := middleware.GetTraceID(r.Context())
+	log.Printf("[TRACE %s] CategoryHandler.Create called", traceID)
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
@@ -58,6 +64,8 @@ func (h *CategoryHandler) Create(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *CategoryHandler) HandleCategoryByID(w http.ResponseWriter, r *http.Request) {
+	traceID := middleware.GetTraceID(r.Context())
+	log.Printf("[TRACE %s] CategoryHandler.HandleCategoryByID called", traceID)
 	switch r.Method {
 	case http.MethodGet:
 		h.GetByID(w, r)
@@ -71,6 +79,8 @@ func (h *CategoryHandler) HandleCategoryByID(w http.ResponseWriter, r *http.Requ
 }
 
 func (h *CategoryHandler) GetByID(w http.ResponseWriter, r *http.Request) {
+	traceID := middleware.GetTraceID(r.Context())
+	log.Printf("[TRACE %s] CategoryHandler.GetByID called", traceID)
 	id := strings.TrimPrefix(r.URL.Path, "/api/categories/")
 	if id == "" {
 		http.Error(w, "Missing ID", http.StatusBadRequest)
@@ -86,6 +96,8 @@ func (h *CategoryHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *CategoryHandler) Update(w http.ResponseWriter, r *http.Request) {
+	traceID := middleware.GetTraceID(r.Context())
+	log.Printf("[TRACE %s] CategoryHandler.Update called", traceID)
 	id := strings.TrimPrefix(r.URL.Path, "/api/categories/")
 	if id == "" {
 		http.Error(w, "Missing ID", http.StatusBadRequest)
@@ -107,6 +119,8 @@ func (h *CategoryHandler) Update(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *CategoryHandler) Delete(w http.ResponseWriter, r *http.Request) {
+	traceID := middleware.GetTraceID(r.Context())
+	log.Printf("[TRACE %s] CategoryHandler.Delete called", traceID)
 	id := strings.TrimPrefix(r.URL.Path, "/api/categories/")
 	if id == "" {
 		http.Error(w, "Missing ID", http.StatusBadRequest)

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"kasir-api/database"
 	"kasir-api/handlers"
+	"kasir-api/middleware"
 	"kasir-api/repositories"
 	"kasir-api/services"
 	"log"
@@ -56,6 +57,11 @@ func main() {
 
 	// Setup Routes
 	SetupRoutes(productHandler, categoryHandler)
+
+	// Wrap all handlers with TraceIDMiddleware
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		middleware.TraceIDMiddleware(http.DefaultServeMux).ServeHTTP(w, r)
+	})
 
 	addr := "0.0.0.0:" + config.Port
 	fmt.Println("Server running on port ", addr)

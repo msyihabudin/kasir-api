@@ -2,8 +2,10 @@ package handlers
 
 import (
 	"encoding/json"
+	"kasir-api/middleware"
 	"kasir-api/models"
 	"kasir-api/services"
+	"log"
 	"net/http"
 	"strings"
 )
@@ -28,6 +30,8 @@ func (h *ProductHandler) HandleProducts(w http.ResponseWriter, r *http.Request) 
 }
 
 func (h *ProductHandler) GetAll(w http.ResponseWriter, r *http.Request) {
+	traceID := middleware.GetTraceID(r.Context())
+	log.Printf("[TRACE %s] ProductHandler.GetAll called", traceID)
 	products, err := h.service.GetAll()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -39,6 +43,8 @@ func (h *ProductHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *ProductHandler) Create(w http.ResponseWriter, r *http.Request) {
+	traceID := middleware.GetTraceID(r.Context())
+	log.Printf("[TRACE %s] ProductHandler.Create called", traceID)
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
@@ -62,6 +68,8 @@ func (h *ProductHandler) Create(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *ProductHandler) HandleProductByID(w http.ResponseWriter, r *http.Request) {
+	traceID := middleware.GetTraceID(r.Context())
+	log.Printf("[TRACE %s] ProductHandler.HandleProductByID called", traceID)
 	switch r.Method {
 	case http.MethodGet:
 		h.GetByID(w, r)
@@ -75,6 +83,8 @@ func (h *ProductHandler) HandleProductByID(w http.ResponseWriter, r *http.Reques
 }
 
 func (h *ProductHandler) GetByID(w http.ResponseWriter, r *http.Request) {
+	traceID := middleware.GetTraceID(r.Context())
+	log.Printf("[TRACE %s] ProductHandler.GetByID called", traceID)
 	id := strings.TrimPrefix(r.URL.Path, "/api/products/")
 	if id == "" {
 		http.Error(w, "Missing ID", http.StatusBadRequest)
@@ -92,6 +102,8 @@ func (h *ProductHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *ProductHandler) Update(w http.ResponseWriter, r *http.Request) {
+	traceID := middleware.GetTraceID(r.Context())
+	log.Printf("[TRACE %s] ProductHandler.Update called", traceID)
 	id := strings.TrimPrefix(r.URL.Path, "/api/products/")
 	if id == "" {
 		http.Error(w, "Missing ID", http.StatusBadRequest)
@@ -116,6 +128,8 @@ func (h *ProductHandler) Update(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *ProductHandler) Delete(w http.ResponseWriter, r *http.Request) {
+	traceID := middleware.GetTraceID(r.Context())
+	log.Printf("[TRACE %s] ProductHandler.Delete called", traceID)
 	id := strings.TrimPrefix(r.URL.Path, "/api/products/")
 	if id == "" {
 		http.Error(w, "Missing ID", http.StatusBadRequest)

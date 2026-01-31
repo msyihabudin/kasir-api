@@ -1,9 +1,9 @@
-package handler
+package handlers
 
 import (
 	"encoding/json"
 	"fmt"
-	"kasir-api/model"
+	model "kasir-api/models"
 	"math/rand"
 	"net/http"
 	"strings"

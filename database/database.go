@@ -2,18 +2,15 @@ package database
 
 import (
 	"context"
-	"database/sql"
 	"log"
 
+	// _ "github.com/lib/pq"
 	"github.com/jackc/pgx/v5"
-	_ "github.com/lib/pq"
 )
 
-var db *sql.DB
-
-func InitDB(connStr string) (*sql.DB, error) {
+func InitDB(connStr string) (*pgx.Conn, error) {
 	// var err error
-	// db, err = sql.Open("postgres", conn)
+	// db, err = sql.Open("postgres", connStr)
 	// if err != nil {
 	// 	return nil, err
 	// }
@@ -22,17 +19,21 @@ func InitDB(connStr string) (*sql.DB, error) {
 	// 	return nil, err
 	// }
 
-	// db.SetMaxOpenConns(25)
+	// db.SetMaxOpenConns(15)
 	// db.SetMaxIdleConns(5)
 
-	// log.Println("Database connected successfully")
+	// var version string
+	// if err := db.QueryRow("SELECT version()").Scan(&version); err != nil {
+	// 	return nil, err
+	// }
+
+	// log.Println("Connected to:", version)
 	// return db, nil
 
 	conn, err := pgx.Connect(context.Background(), connStr)
 	if err != nil {
 		return nil, err
 	}
-	defer conn.Close(context.Background())
 
 	// Example query to test connection
 	var version string
@@ -41,5 +42,5 @@ func InitDB(connStr string) (*sql.DB, error) {
 	}
 
 	log.Println("Connected to:", version)
-	return db, nil
+	return conn, nil
 }

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"kasir-api/database"
 	"kasir-api/handlers"
@@ -39,7 +40,7 @@ func main() {
 	if err != nil {
 		log.Fatal("Failed to connect to database: ", err)
 	}
-	defer db.Close()
+	defer db.Close(context.Background())
 
 	// Initialize Repositories
 	productRepo := repositories.NewProductRepository(db)

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"kasir-api/database"
 	"kasir-api/handlers"
@@ -40,19 +39,22 @@ func main() {
 	if err != nil {
 		log.Fatal("Failed to connect to database: ", err)
 	}
-	defer db.Close(context.Background())
+	defer db.Close()
 
 	// Initialize Repositories
 	productRepo := repositories.NewProductRepository(db)
+	categoryRepo := repositories.NewCategoryRepository(db)
 
 	// Initialize Services
 	productService := services.NewProductService(productRepo)
+	categoryService := services.NewCategoryService(categoryRepo)
 
 	// Initialize Handlers
 	productHandler := handlers.NewProductHandler(productService)
+	categoryHandler := handlers.NewCategoryHandler(categoryService)
 
 	// Setup Routes
-	SetupRoutes(productHandler)
+	SetupRoutes(productHandler, categoryHandler)
 
 	addr := "0.0.0.0:" + config.Port
 	fmt.Println("Server running on port ", addr)

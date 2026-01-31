@@ -1,0 +1,78 @@
+package repositories
+
+import (
+	// "context"
+	"database/sql"
+	"kasir-api/models"
+	// "github.com/jackc/pgx/v5"
+)
+
+type CategoryRepository struct {
+	db *sql.DB
+}
+
+func NewCategoryRepository(db *sql.DB) *CategoryRepository {
+	return &CategoryRepository{db: db}
+}
+
+func (r *CategoryRepository) GetAll() ([]*models.Category, error) {
+	rows, err := r.db.Query("SELECT id, name FROM category")
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var categories []*models.Category
+	for rows.Next() {
+		var c models.Category
+		if err := rows.Scan(&c.ID, &c.Name); err != nil {
+			return nil, err
+		}
+		categories = append(categories, &c)
+	}
+	return categories, nil
+}
+
+func (r *CategoryRepository) Create(c *models.Category) (*models.Category, error) {
+	var id string
+	err := r.db.QueryRow(
+		"INSERT INTO category (name) VALUES ($1) RETURNING id",
+		c.Name,
+	).Scan(&id)
+	if err != nil {
+		return nil, err
+	}
+	c.ID = id
+	return c, nil
+}
+
+func (r *CategoryRepository) GetByID(id string) (*models.Category, error) {
+	var c models.Category
+	err := r.db.QueryRow(
+		"SELECT id, name FROM category WHERE id = $1",
+		id,
+	).Scan(&c.ID, &c.Name)
+	if err != nil {
+		return nil, err
+	}
+	return &c, nil
+}
+
+func (r *CategoryRepository) Update(c *models.Category) (*models.Category, error) {
+	_, err := r.db.Exec(
+		"UPDATE category SET name = $1 WHERE id = $2",
+		c.Name, c.ID,
+	)
+	if err != nil {
+		return nil, err
+	}
+	return c, nil
+}
+
+func (r *CategoryRepository) Delete(id string) error {
+	_, err := r.db.Exec(
+		"DELETE FROM category WHERE id = $1",
+		id,
+	)
+	return err
+}

@@ -6,5 +6,5 @@ type ProductWithCategory struct {
 	Name         string  `json:"name"`
 	Price        float64 `json:"price"`
 	Stock        int     `json:"stock"`
-	CategoryName string  `json:"category_name"`
+	CategoryName *string `json:"category_name"`
 }

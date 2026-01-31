@@ -19,7 +19,7 @@ func NewProductRepository(db *pgx.Conn) *ProductRepository {
 func (r *ProductRepository) GetAll() ([]*models.ProductWithCategory, error) {
 	rows, err := r.db.Query(
 		context.Background(),
-		"SELECT p.id, p.name, p.price, p.stock, c.name FROM product p LEFT JOIN category c ON p.category_id = c.id")
+		"SELECT p.id, p.name, p.price, p.stock, c.name as category_name FROM product p LEFT JOIN category c ON p.category_id = c.id")
 	if err != nil {
 		return nil, err
 	}

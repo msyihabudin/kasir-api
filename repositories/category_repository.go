@@ -3,8 +3,9 @@ package repositories
 import (
 	"context"
 	// "database/sql"
-	"github.com/jackc/pgx/v5"
 	"kasir-api/models"
+
+	"github.com/jackc/pgx/v5"
 )
 
 type CategoryRepository struct {
@@ -16,7 +17,7 @@ func NewCategoryRepository(db *pgx.Conn) *CategoryRepository {
 }
 
 func (r *CategoryRepository) GetAll() ([]*models.Category, error) {
-	rows, err := r.db.Query(context.Background(), "SELECT id, name FROM category")
+	rows, err := r.db.Query(context.Background(), "SELECT id, name, description FROM category")
 	if err != nil {
 		return nil, err
 	}
@@ -25,7 +26,7 @@ func (r *CategoryRepository) GetAll() ([]*models.Category, error) {
 	var categories []*models.Category
 	for rows.Next() {
 		var c models.Category
-		if err := rows.Scan(&c.ID, &c.Name); err != nil {
+		if err := rows.Scan(&c.ID, &c.Name, &c.Description); err != nil {
 			return nil, err
 		}
 		categories = append(categories, &c)
@@ -37,8 +38,8 @@ func (r *CategoryRepository) Create(c *models.Category) (*models.Category, error
 	var id string
 	err := r.db.QueryRow(
 		context.Background(),
-		"INSERT INTO category (name) VALUES ($1) RETURNING id",
-		c.Name,
+		"INSERT INTO category (name, description) VALUES ($1, $2) RETURNING id",
+		c.Name, c.Description,
 	).Scan(&id)
 	if err != nil {
 		return nil, err
@@ -51,9 +52,9 @@ func (r *CategoryRepository) GetByID(id string) (*models.Category, error) {
 	var c models.Category
 	err := r.db.QueryRow(
 		context.Background(),
-		"SELECT id, name FROM category WHERE id = $1",
+		"SELECT id, name, description FROM category WHERE id = $1",
 		id,
-	).Scan(&c.ID, &c.Name)
+	).Scan(&c.ID, &c.Name, &c.Description)
 	if err != nil {
 		return nil, err
 	}
@@ -63,8 +64,8 @@ func (r *CategoryRepository) GetByID(id string) (*models.Category, error) {
 func (r *CategoryRepository) Update(c *models.Category) (*models.Category, error) {
 	_, err := r.db.Exec(
 		context.Background(),
-		"UPDATE category SET name = $1 WHERE id = $2",
-		c.Name, c.ID,
+		"UPDATE category SET name = $1, description = $2 WHERE id = $3",
+		c.Name, c.Description, c.ID,
 	)
 	if err != nil {
 		return nil, err

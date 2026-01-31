@@ -1,73 +1,63 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
-	"kasir-api/handler"
+	"kasir-api/database"
+	"kasir-api/handlers"
+	"kasir-api/repositories"
+	"kasir-api/services"
+	"log"
 	"net/http"
+	"os"
+	"strings"
+
+	"github.com/spf13/viper"
 )
 
+type Config struct {
+	Port   string `mapstructure:"PORT"`
+	DbConn string `mapstructure:"DB_CONN"`
+}
+
 func main() {
-	http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(map[string]string{
-			"status":  "OK",
-			"message": "API Running",
-		})
-	})
 
-	http.HandleFunc("/api/products", func(w http.ResponseWriter, r *http.Request) {
-		switch r.Method {
-		case http.MethodGet:
-			handler.GetProducts(w, r)
-		case http.MethodPost:
-			handler.CreateProduct(w, r)
-		default:
-			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		}
-	})
+	viper.AutomaticEnv()
+	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 
-	http.HandleFunc("/api/products/", func(w http.ResponseWriter, r *http.Request) {
-		switch r.Method {
-		case http.MethodGet:
-			handler.GetProduct(w, r)
-		case http.MethodPut:
-			handler.UpdateProduct(w, r)
-		case http.MethodDelete:
-			handler.DeleteProduct(w, r)
-		default:
-			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		}
-	})
+	if _, err := os.Stat("configs/.env"); err == nil {
+		viper.SetConfigFile("configs/.env")
+		_ = viper.ReadInConfig()
+	}
 
-	http.HandleFunc("/api/categories", func(w http.ResponseWriter, r *http.Request) {
-		switch r.Method {
-		case http.MethodGet:
-			handler.GetCategories(w, r)
-		case http.MethodPost:
-			handler.CreateCategory(w, r)
-		default:
-			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		}
-	})
+	config := Config{
+		Port:   viper.GetString("PORT"),
+		DbConn: viper.GetString("DB_CONN"),
+	}
 
-	http.HandleFunc("/api/categories/", func(w http.ResponseWriter, r *http.Request) {
-		switch r.Method {
-		case http.MethodGet:
-			handler.GetCategory(w, r)
-		case http.MethodPut:
-			handler.UpdateCategory(w, r)
-		case http.MethodDelete:
-			handler.DeleteCategory(w, r)
-		default:
-			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		}
-	})
-
-	fmt.Println("Server running on port 8080")
-
-	err := http.ListenAndServe(":8080", nil)
+	// Initialize Database
+	db, err := database.InitDB(config.DbConn)
 	if err != nil {
-		fmt.Printf("Failed to run server: %v", err)
+		log.Fatal("Failed to connect to database: ", err)
+	}
+	defer db.Close()
+
+	// Initialize Repositories
+	productRepo := repositories.NewProductRepository(db)
+
+	// Initialize Services
+	productService := services.NewProductService(productRepo)
+
+	// Initialize Handlers
+	productHandler := handlers.NewProductHandler(productService)
+
+	// Setup Routes
+	SetupRoutes(productHandler)
+
+	addr := "0.0.0.0:" + config.Port
+	fmt.Println("Server running on port ", addr)
+
+	err = http.ListenAndServe(addr, nil)
+	if err != nil {
+		log.Fatal("Failed to run server: ", err)
 	}
 }

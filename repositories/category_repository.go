@@ -3,8 +3,8 @@ package repositories
 import (
 	"context"
 	// "database/sql"
-	"kasir-api/models"
 	"github.com/jackc/pgx/v5"
+	"kasir-api/models"
 )
 
 type CategoryRepository struct {

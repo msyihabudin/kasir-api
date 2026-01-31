@@ -16,17 +16,19 @@ func NewProductRepository(db *pgx.Conn) *ProductRepository {
 	return &ProductRepository{db: db}
 }
 
-func (r *ProductRepository) GetAll() ([]*models.Product, error) {
-	rows, err := r.db.Query(context.Background(), "SELECT id, name, price, stock FROM product")
+func (r *ProductRepository) GetAll() ([]*models.ProductWithCategory, error) {
+	rows, err := r.db.Query(
+		context.Background(),
+		"SELECT p.id, p.name, p.price, p.stock, c.name FROM product p LEFT JOIN category c ON p.category_id = c.id")
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	var products []*models.Product
+	var products []*models.ProductWithCategory
 	for rows.Next() {
-		var p models.Product
-		if err := rows.Scan(&p.ID, &p.Name, &p.Price, &p.Stock); err != nil {
+		var p models.ProductWithCategory
+		if err := rows.Scan(&p.ID, &p.Name, &p.Price, &p.Stock, &p.CategoryName); err != nil {
 			return nil, err
 		}
 		products = append(products, &p)
@@ -38,8 +40,8 @@ func (r *ProductRepository) Create(p *models.Product) (*models.Product, error) {
 	var id string
 	err := r.db.QueryRow(
 		context.Background(),
-		"INSERT INTO product (name, price, stock) VALUES ($1, $2, $3) RETURNING id",
-		p.Name, p.Price, p.Stock,
+		"INSERT INTO product (name, price, stock, category_id) VALUES ($1, $2, $3, $4) RETURNING id",
+		p.Name, p.Price, p.Stock, p.CategoryID,
 	).Scan(&id)
 	if err != nil {
 		return nil, err
@@ -48,12 +50,12 @@ func (r *ProductRepository) Create(p *models.Product) (*models.Product, error) {
 	return p, nil
 }
 
-func (r *ProductRepository) GetByID(id string) (*models.Product, error) {
-	var p models.Product
+func (r *ProductRepository) GetByID(id string) (*models.ProductWithCategory, error) {
+	var p models.ProductWithCategory
 	err := r.db.QueryRow(
 		context.Background(),
-		"SELECT id, name, price, stock FROM product WHERE id = $1",
-		id).Scan(&p.ID, &p.Name, &p.Price, &p.Stock)
+		"SELECT p.id, p.name, p.price, p.stock, c.name FROM product p LEFT JOIN category c ON p.category_id = c.id WHERE p.id = $1",
+		id).Scan(&p.ID, &p.Name, &p.Price, &p.Stock, &p.CategoryName)
 	if err != nil {
 		return nil, err
 	}
@@ -63,8 +65,8 @@ func (r *ProductRepository) GetByID(id string) (*models.Product, error) {
 func (r *ProductRepository) Update(p *models.Product) (*models.Product, error) {
 	_, err := r.db.Exec(
 		context.Background(),
-		"UPDATE product SET name = $1, price = $2, stock = $3 WHERE id = $4",
-		p.Name, p.Price, p.Stock, p.ID)
+		"UPDATE product SET name = $1, price = $2, stock = $3, category_id = $4 WHERE id = $5",
+		p.Name, p.Price, p.Stock, p.CategoryID, p.ID)
 	if err != nil {
 		return nil, err
 	}

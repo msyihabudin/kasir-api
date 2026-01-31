@@ -37,7 +37,11 @@ func (h *ProductHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-
+	// If no products, return not found
+	if products == nil || len(products) == 0 {
+		http.Error(w, "Products not found", http.StatusNotFound)
+		return
+	}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(products)
 }
@@ -55,13 +59,16 @@ func (h *ProductHandler) Create(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-
+	// Validate category_id
+	if p.CategoryID == "" {
+		http.Error(w, "category_id is required", http.StatusBadRequest)
+		return
+	}
 	createdProduct, err := h.service.Create(&p)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(createdProduct)
@@ -92,11 +99,10 @@ func (h *ProductHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 	}
 
 	product, err := h.service.GetByID(id)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusNotFound)
+	if err != nil || product == nil {
+		http.Error(w, "Product not found", http.StatusNotFound)
 		return
 	}
-
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(product)
 }
@@ -116,13 +122,16 @@ func (h *ProductHandler) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	p.ID = id
-
+	// Validate category_id
+	if p.CategoryID == "" {
+		http.Error(w, "category_id is required", http.StatusBadRequest)
+		return
+	}
 	updatedProduct, err := h.service.Update(&p)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
-
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(updatedProduct)
 }
